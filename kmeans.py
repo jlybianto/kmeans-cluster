@@ -7,6 +7,7 @@
 import pandas as pd
 from scipy.cluster.vq import whiten, kmeans
 from scipy.spatial.distance import cdist
+import numpy as np
 
 # ----------------
 # OBTAIN DATA
@@ -56,3 +57,8 @@ centers = [kmeans(whiten_list, k) for k in k_list]
 
 # Append the center coordinates to a new centroid list without the distortion.
 centroids = [center for (center, distortion) in centers]
+
+# Calculation of distances from each data point in whiten_list to centroid centers.
+distances = [cdist(whiten_list, center, "euclidean") for center in centroids]
+distances = [np.min(d, axis=1) for d in distances] # Shift individual distances as its own list
+sum_squares = [sum(d) / len(d) for d in distances]
