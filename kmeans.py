@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.cluster.vq import whiten, kmeans
 from scipy.spatial.distance import cdist
 import numpy as np
+import matplotlib.pyplot as plt
 
 # ----------------
 # OBTAIN DATA
@@ -62,3 +63,12 @@ centroids = [center for (center, distortion) in centers]
 distances = [cdist(whiten_list, center, "euclidean") for center in centroids]
 distances = [np.min(d, axis=1) for d in distances] # Shift individual distances as its own list
 sum_squares = [sum(d) / len(d) for d in distances]
+
+# Visualization of different k-means clustering to determine the best number of clusters to be used.
+plt.figure()
+plt.plot(k_list, sum_squares)
+plt.gca().grid(True)
+plt.xlabel("Number of Clusters (k)", fontsize=14)
+plt.ylabel("Normalized Within-Cluster Sum of Squares", fontsize=14)
+plt.title("Plot of Number of Clusters vs. Sum of Squares Within Each Number of Clusters", fontsize=16)
+plt.show()
