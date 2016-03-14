@@ -5,7 +5,7 @@
 # The pandas package is used to fetch and store data in a DataFrame.
 # Whitening to rescale or normalize features through dividing by its standard deviation.
 import pandas as pd
-from scipy.cluster.vq import whiten, kmeans
+from scipy.cluster.vq import whiten, kmeans, vq
 from scipy.spatial.distance import cdist
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,7 +54,7 @@ whiten_list = whiten(new_list)
 k_list = range(1, 11)
 centers = [kmeans(whiten_list, k) for k in k_list]
 # Result: ("A k x N array of k-centroids, Distortion")
-# Distortion is defined as the sume of the squared differences between the observations and the corresponding centroid.
+# Distortion is defined as the sum of the squared differences between the observations and the corresponding centroid.
 
 # Append the center coordinates to a new centroid list without the distortion.
 centroids = [center for (center, distortion) in centers]
@@ -63,6 +63,10 @@ centroids = [center for (center, distortion) in centers]
 distances = [cdist(whiten_list, center, "euclidean") for center in centroids]
 distances = [np.min(d, axis=1) for d in distances] # Shift individual distances as its own list
 sum_squares = [sum(d) / len(d) for d in distances]
+ 
+print("Sum of Squares Within Each Number of Clusters (k): ")
+for i, j in zip(k_list, sum_squares):
+	print i, j
 
 # Visualization of different k-means clustering to determine the best number of clusters to be used.
 plt.figure()
@@ -71,4 +75,15 @@ plt.gca().grid(True)
 plt.xlabel("Number of Clusters (k)", fontsize=14)
 plt.ylabel("Normalized Within-Cluster Sum of Squares", fontsize=14)
 plt.title("Plot of Number of Clusters vs. Sum of Squares Within Each Number of Clusters", fontsize=16)
+plt.show()
+
+# ----------------
+# TEST DATA
+# ----------------
+
+# Infant Mortality vs. GDP per Capita
+# Let k = 2 clusters
+IM_GDP,_ = vq(whiten_list, centroids[1])
+plt.plot(whiten_list[IM_GDP == 0, 0], whiten_list[IM_GDP == 0, 1], "or",
+	whiten_list[IM_GDP == 1, 0], whiten_list[IM_GDP == 1, 1], "ob")
 plt.show()
