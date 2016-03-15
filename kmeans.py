@@ -72,7 +72,7 @@ distances = [cdist(IM_GDP_numpy, center, "euclidean") for center in centroids]
 distances = [np.min(d, axis=1) for d in distances] # Shift individual distances as its own list
 sum_squares = [sum(d) / len(d) for d in distances]
  
-print("Sum of Squares Within Each Number of Clusters (k): ")
+print("Sum of Squares Within Each Number of Clusters (k) for Infant Mortality: ")
 for i, j in zip(k_list, sum_squares):
 	print i, j
 
@@ -104,3 +104,59 @@ plt.xlabel("GDP per Capita (USD)", fontsize=14)
 plt.ylabel("Infant Mortality (Per 1000)", fontsize=14)
 plt.title("Clustering Infant Mortality and GDP per Capita", fontsize=16)
 plt.show()
+print("")
+
+# ----------------
+# MODEL DATA (Male Life Expectancy vs. GDP per Capita)
+# ----------------
+
+# Convert list into a NumPy array type.
+Male_GDP_numpy = np.array(Male_GDP_list)
+
+# Determine the coordinates of centers for a range of k-number clusters.
+k_list = range(1, 11)
+centers = [kmeans(Male_GDP_numpy, k) for k in k_list]
+# Result: ("A k x N array of k-centroids, Distortion")
+# Distortion is defined as the sum of the squared differences between the observations and the corresponding centroid.
+
+# Append the center coordinates to a new centroid list without the distortion.
+centroids = [center for (center, distortion) in centers]
+
+# Calculation of distances from each data point in whiten_list to centroid centers.
+distances = [cdist(Male_GDP_numpy, center, "euclidean") for center in centroids]
+distances = [np.min(d, axis=1) for d in distances] # Shift individual distances as its own list
+sum_squares = [sum(d) / len(d) for d in distances]
+ 
+print("Sum of Squares Within Each Number of Clusters (k) for Male Life Expectancy: ")
+for i, j in zip(k_list, sum_squares):
+	print i, j
+
+# Visualization of different k-means clustering to determine the best number of clusters to be used.
+plt.figure()
+plt.plot(k_list, sum_squares)
+plt.gca().grid(True)
+plt.xlabel("Number of Clusters (k)", fontsize=14)
+plt.ylabel("Within-Cluster Sum of Squares", fontsize=14)
+plt.title("Number of Clusters vs. Sum of Squares Within Each Cluster", fontsize=16)
+plt.show()
+
+# Male Life Expectancy vs. GDP per Capita
+print("")
+male_k_input = int(raw_input("Select the number of clusters (1 - 10) for Male Life Expectancy: "))
+if male_k_input == 1:
+	Male_GDP,_ = vq(Male_GDP_numpy, centroids[0])
+	plt.plot(Male_GDP_numpy[Male_GDP == 0, 0], Male_GDP_numpy[Male_GDP == 0, 1], "or")
+elif male_k_input == 2:
+	Male_GDP,_ = vq(Male_GDP_numpy, centroids[1])
+	plt.plot(Male_GDP_numpy[Male_GDP == 0, 0], Male_GDP_numpy[Male_GDP == 0, 1], "or",
+		Male_GDP_numpy[Male_GDP == 1, 0], Male_GDP_numpy[Male_GDP == 1, 1], "ob")
+elif male_k_input == 3:
+	Male_GDP,_ = vq(Male_GDP_numpy, centroids[2])
+	plt.plot(Male_GDP_numpy[Male_GDP == 0, 0], Male_GDP_numpy[Male_GDP == 0, 1], "or",
+		Male_GDP_numpy[Male_GDP == 1, 0], Male_GDP_numpy[Male_GDP == 1, 1], "ob",
+		Male_GDP_numpy[Male_GDP == 2, 0], Male_GDP_numpy[Male_GDP == 2, 1], "og")
+plt.xlabel("GDP per Capita (USD)", fontsize=14)
+plt.ylabel("Male Life Expectancy (Year)", fontsize=14)
+plt.title("Clustering Male Life Expectancy and GDP per Capita", fontsize=16)
+plt.show()
+print("")
