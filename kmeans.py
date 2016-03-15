@@ -38,21 +38,29 @@ print("")
 
 # Filter data to columns 6, 7, 8, 9; lifeMale, lifeFemale, infantMortality and GDPperCapita.
 data = un.ix[0:, :10].dropna()
-new_list = []
+
+Male_GDP_list = []
+for m, n in data.iterrows():
+	Male_GDP_list.append([n["GDPperCapita"], n["lifeMale"]])
+
+Female_GDP_list = []
+for x, y in data.iterrows():
+	Female_GDP_list.append([y["GDPperCapita"], y["lifeFemale"]])
+
+IM_GDP_list = []
 for i, j in data.iterrows():
-	new_list.append([j["infantMortality"], j["GDPperCapita"]])
+	IM_GDP_list.append([j["GDPperCapita"], j["infantMortality"]])
 
 # ----------------
-# MODEL DATA
+# MODEL DATA (Infant Mortality vs. GDP per Capita)
 # ----------------
 
-# Before running k-means, it is beneficial to rescale each feature dimension of the observation set with whitening.
-# Each feature is divided by its standard deviation across all observations to give it unit variance.
-whiten_list = whiten(new_list)
+# Convert list into a NumPy array type.
+IM_GDP_numpy = np.array(IM_GDP_list)
 
 # Determine the coordinates of centers for a range of k-number clusters.
 k_list = range(1, 11)
-centers = [kmeans(whiten_list, k) for k in k_list]
+centers = [kmeans(IM_GDP_numpy, k) for k in k_list]
 # Result: ("A k x N array of k-centroids, Distortion")
 # Distortion is defined as the sum of the squared differences between the observations and the corresponding centroid.
 
@@ -60,7 +68,7 @@ centers = [kmeans(whiten_list, k) for k in k_list]
 centroids = [center for (center, distortion) in centers]
 
 # Calculation of distances from each data point in whiten_list to centroid centers.
-distances = [cdist(whiten_list, center, "euclidean") for center in centroids]
+distances = [cdist(IM_GDP_numpy, center, "euclidean") for center in centroids]
 distances = [np.min(d, axis=1) for d in distances] # Shift individual distances as its own list
 sum_squares = [sum(d) / len(d) for d in distances]
  
@@ -73,17 +81,26 @@ plt.figure()
 plt.plot(k_list, sum_squares)
 plt.gca().grid(True)
 plt.xlabel("Number of Clusters (k)", fontsize=14)
-plt.ylabel("Normalized Within-Cluster Sum of Squares", fontsize=14)
-plt.title("Plot of Number of Clusters vs. Sum of Squares Within Each Number of Clusters", fontsize=16)
+plt.ylabel("Within-Cluster Sum of Squares", fontsize=14)
+plt.title("Number of Clusters vs. Sum of Squares Within Each Cluster", fontsize=16)
 plt.show()
 
-# ----------------
-# TEST DATA
-# ----------------
-
 # Infant Mortality vs. GDP per Capita
-# Let k = 2 clusters
-IM_GDP,_ = vq(whiten_list, centroids[1])
-plt.plot(whiten_list[IM_GDP == 0, 0], whiten_list[IM_GDP == 0, 1], "or",
-	whiten_list[IM_GDP == 1, 0], whiten_list[IM_GDP == 1, 1], "ob")
+print("")
+infant_k_input = int(raw_input("Select the number of clusters (1 - 10) for Infant Mortality: "))
+if infant_k_input == 1:
+	IM_GDP,_ = vq(IM_GDP_numpy, centroids[0])
+	plt.plot(IM_GDP_numpy[IM_GDP == 0, 0], IM_GDP_numpy[IM_GDP == 0, 1], "or")
+elif infant_k_input == 2:
+	IM_GDP,_ = vq(IM_GDP_numpy, centroids[1])
+	plt.plot(IM_GDP_numpy[IM_GDP == 0, 0], IM_GDP_numpy[IM_GDP == 0, 1], "or",
+		IM_GDP_numpy[IM_GDP == 1, 0], IM_GDP_numpy[IM_GDP == 1, 1], "ob")
+elif infant_k_input == 3:
+	IM_GDP,_ = vq(IM_GDP_numpy, centroids[2])
+	plt.plot(IM_GDP_numpy[IM_GDP == 0, 0], IM_GDP_numpy[IM_GDP == 0, 1], "or",
+		IM_GDP_numpy[IM_GDP == 1, 0], IM_GDP_numpy[IM_GDP == 1, 1], "ob",
+		IM_GDP_numpy[IM_GDP == 2, 0], IM_GDP_numpy[IM_GDP == 2, 1], "og")
+plt.xlabel("GDP per Capita (USD)", fontsize=14)
+plt.ylabel("Infant Mortality (Per 1000)", fontsize=14)
+plt.title("Clustering Infant Mortality and GDP per Capita", fontsize=16)
 plt.show()
